@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morton's Music Service</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background: #222; color: #fff; padding: 15px; max-width: 500px; margin: auto; }
+        .calculator { background: linear-gradient(135deg, #8b0000, #000); border: 4px solid #fff; padding: 20px; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: #ffcc00; text-shadow: 2px 2px #000; margin-top: 0; }
+        h3 { border-bottom: 2px solid #fff; padding-bottom: 5px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; }
+        button { background: #8b0000; color: white; border: 1px solid #fff; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .discount-btn { background: #333; }
+        .quote-btn { background: #ffcc00; color: #000; width: 100%; margin-top: 15px; }
+        .total { font-size: 28px; font-weight: bold; color: #ff0; text-align: center; margin-top: 20px; padding: 10px; border: 2px dashed #ff0; }
+        input { padding: 8px; border-radius: 4px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Morton's Music Service</h2>
+    
+    <div id="serviceList"></div>
+
+    <h3>Frequent Add-ons</h3>
+    <button onclick="addCustom(15, 'Strap Button')">Strap Button ($15)</button>
+    <button onclick="addCustom(30, 'Tuning Gear')">Tuning Gear ($30)</button>
+    <div style="margin-top:10px">
+        <input type="text" id="customName" placeholder="Other Item" style="width: 40%">
+        <input type="number" id="customPrice" placeholder="Price" style="width: 20%">
+        <button onclick="addCustomField()">Add</button>
+    </div>
+
+    <h3>Discounts</h3>
+    <button class="discount-btn" onclick="applyDiscount(0)">None</button>
+    <button class="discount-btn" onclick="applyDiscount(0.10)">10%</button>
+    <button class="discount-btn" onclick="applyDiscount(0.15)">15%</button>
+    <button class="discount-btn" onclick="applyDiscount(0.25)">25%</button>
+    <button class="discount-btn" onclick="applyDiscount(0.50)">50%</button>
+
+    <div class="total">Total: $<span id="finalTotal">0</span></div>
+    <button class="quote-btn" onclick="sendQuote()">Generate Email Quote</button>
+</div>
+
+<script>
+    const services = [
+        {name: "Restring", price: 20}, {name: "Cleanup", price: 45},
+        {name: "Stoptail & Strat Setup", price: 85}, {name: "Acoustic Setup", price: 125},
+        {name: "Floyd Rose Setup", price: 150}, {name: "Pot/Switch Replace", price: 50},
+        {name: "1 Pickup Install", price: 70}, {name: "2 Pickup Install", price: 120},
+        {name: "3 Pickup Install", price: 150}, {name: "Strat/Tele Rewire", price: 130},
+        {name: "LP/SG Rewire", price: 185}, {name: "Hollowbody Rewire", price: 225},
+        {name: "Acoustic Pickup Install", price: 150}, {name: "Pre-Slotted Nut", price: 75},
+        {name: "Bone Nut/Saddle", price: 110}, {name: "Nut/Saddle Combo", price: 175},
+        {name: "Fret Level (Nickel)", price: 225}, {name: "Fret Level (SS)", price: 300},
+        {name: "Refret (Standard)", price: 400}, {name: "Refret (SS)", price: 550}
+    ];
+
+    let cart = [];
+    let discount = 0;
+
+    function render() {
+        let html = '';
+        services.forEach((s, i) => {
+            html += `<div class="row"><span>${s.name} ($${s.price})</span> 
+                     <button onclick="updateCart(${i})">+</button></div>`;
+        });
+        document.getElementById('serviceList').innerHTML = html;
+    }
+
+    function updateCart(index) { cart.push(services[index]); calculate(); }
+    function addCustom(price, name) { cart.push({name: name, price: price}); calculate(); }
+    function addCustomField() {
+        let name = document.getElementById('customName').value;
+        let price = parseFloat(document.getElementById('customPrice').value);
+        if(name && price) { addCustom(price, name); document.getElementById('customName').value=''; document.getElementById('customPrice').value=''; }
+    }
+    function applyDiscount(d) { discount = d; calculate(); }
+    function calculate() {
+        let subtotal = cart.reduce((acc, curr) => acc + curr.price, 0);
+        let total = subtotal - (subtotal * discount);
+        document.getElementById('finalTotal').innerText = total.toFixed(2);
+    }
+    function sendQuote() {
+        let items = cart.map(item => item.name + " - $" + item.price).join("%0D%0A");
+        let total = document.getElementById('finalTotal').innerText;
+        let subject = "Quote from Morton's Music Service";
+        let body = "Hi there,%0D%0A%0D%0AHere is the quote for your instrument services:%0D%0A%0D%0A" + items + "%0D%0A%0D%0ATotal: $" + total + "%0D%0A%0D%0AThanks for choosing Morton's Music Service!";
+        window.location.href = "mailto:?subject=" + subject + "&body=" + body;
+    }
+    render();
+</script>
+</body>
+</html>
